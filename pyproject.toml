@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drlhp-torch"
+version = "0.0.1"
+description = "An updated version of the Deep Reinforcement Learning from Human Preferences codebase in PyTorch"
+readme = "README.md"
+authors = [{ name = "Jacob Sullivan", email = "jksully@umich.edu" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">= 3.11"
+dependencies = [
+    "torch>=2.4.0",
+    "torchrl>=0.5.0",
+    "numpy>=2.0.0",
+    "gymnasium",
+    "matplotlib",
+    "tensorboard",
+    "tensordict",
+    "tqdm",
+    # Preference Interface includes
+    "Django",
+    "dj_database_url",
+    "gunicorn",
+    "whitenoise",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

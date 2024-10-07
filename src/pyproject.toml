@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "human_feedback_api"
+version = "0.0.1"
+requires-python = ">= 3.11"
+dependencies = ["Django", "dj_database_url", "gunicorn", "whitenoise"]
+
+[tool.setuptools]
+packages = ["human_feedback_api", "human_feedback_site"]
