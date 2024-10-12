@@ -97,7 +97,7 @@ class HumanComparisonCollector():
             media_url_2=self.convert_segment_to_media_url(
                 comparison_uuid, 'right', right_seg),
             response_kind='left_or_right',
-            priority=1.
+            priority=1.0
         )
         comparison.full_clean()
         comparison.save()

@@ -1,5 +1,7 @@
 # Project specific
 rl-teacher/
+_depreciated/
+test.ipynb
 
 *.sqlite3
 

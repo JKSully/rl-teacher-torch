@@ -1,4 +1,4 @@
-from human_feedback_api.models import Comparison
+from human_feedback_api import Comparison
 
 
 def generate_test():
