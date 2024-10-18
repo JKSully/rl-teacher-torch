@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 
 # TODO: type hinting
 
-
 class LabelAnnealer:
     def __init__(self, agent_logger, final_timesteps, final_labels, pretrain_labels) -> None:
         self._agent_logger = agent_logger
@@ -56,3 +55,4 @@ class ConstantLabelSchedule(LabelSchedule):
         self.start_timing()
 
         return self._pretrain_labels + self.time_elapsed // self._seconds_between_labels
+

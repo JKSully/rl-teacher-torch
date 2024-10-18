@@ -2,7 +2,7 @@
 DRLHP/rl-teacher rewritten in PyTorch 2.4 and Django 5.0.x
 
 Original repo: https://github.com/mrahtz/learning-from-human-preferences
-Refernce repos: https://github.com/nottombrown/rl-teacher, https://github.com/HumanCompatibleAI/learning-from-human-preferences
+Reference repos: https://github.com/nottombrown/rl-teacher, https://github.com/HumanCompatibleAI/learning-from-human-preferences
 
 
 #### Set up the `human-feedback-api` webapp
