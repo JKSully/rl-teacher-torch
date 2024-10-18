@@ -1,6 +1,7 @@
 from time import time
+from abc import ABC, abstractmethod
 
-# TODO: Redo these classes
+# TODO: type hinting
 
 
 class LabelAnnealer:
@@ -12,6 +13,7 @@ class LabelAnnealer:
 
     @property
     def n_desired_labels(self):
+        # Decay from 1 to 0
         exp_decay_frac = 0.01 ** (self._agent_logger._timesteps_elapsed /
                                   self._final_timesteps)
         pretrain_frac = self._pretrain_labels / self._final_labels
@@ -21,14 +23,36 @@ class LabelAnnealer:
         return desired_frac * self._final_labels
 
 
-class ConstantLabelSchedule:
-    def __init__(self, pretrain_labels, seconds_between_labels=3.0) -> None:
-        self._started_at = None  # Don't initialize until we call n_desired_labels
-        self._seconds_between_labels = seconds_between_labels
+class LabelSchedule(ABC):
+    def __init__(self, pretrain_labels: int) -> None:
+        super().__init__()
         self._pretrain_labels = pretrain_labels
+        self._started_at = None
+
+    @property
+    @abstractmethod
+    def n_desired_labels(self):
+        """Return the number of desired labels at the current timestep."""
+        pass
+
+    def start_timing(self):
+        if self._started_at is None:
+            self._started_at = time()
+
+    @property
+    def time_elapsed(self):
+        if self._started_at is None:
+            return 0
+        return time() - self._started_at
+
+
+class ConstantLabelSchedule(LabelSchedule):
+    def __init__(self, pretrain_labels: int, seconds_between_labels: float = 3.0) -> None:
+        super().__init__(pretrain_labels)
+        self._seconds_between_labels = seconds_between_labels
 
     @property
     def n_desired_labels(self):
-        if self._started_at is None:
-            self._started_at = time()
-        return self._pretrain_labels + (time() - self._started_at) / self._seconds_between_labels
+        self.start_timing()
+
+        return self._pretrain_labels + self.time_elapsed // self._seconds_between_labels
