@@ -4,7 +4,6 @@ from torch import tensor
 from torch.nn import Module, LeakyReLU
 from torchrl.modules import MLP
 
-
 class FullyConnectedMLP(Module):
     def __init__(self, obs_shape, act_shape, h_size=64)->None:
         super(Module, self).__init__()

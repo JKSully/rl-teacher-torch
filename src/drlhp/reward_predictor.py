@@ -3,7 +3,7 @@ from torch import Tensor
 import torch.nn as nn
 
 import torchrl
-from torchrl.envs import EnvBase
+from torchrl.data import CompositeSpec
 
 from drlhp.nn import FullyConnectedMLP
 
@@ -13,16 +13,15 @@ class ComparisonRewardPredictor(nn.Module):
     Reward predictor that takes in two segments, the preferred segment and the alternative segment, and predicts the reward of the preferred segment
     """
 
-    def __init__(self, env: EnvBase, network: nn.Module = None) -> None:
+    def __init__(self, observation_spec: CompositeSpec, action_spec: CompositeSpec, network: nn.Module = None) -> None:
         """
         Args:
             env (EnvBase): The environment object
             network (nn.Module): The neural network model. Must take in the observation and action tensors
         """
         super().__init__()
-        self.env = env
         self.network = network if network is not None else FullyConnectedMLP(
-            env.observation_spec.shape, env.action_spec.shape)
+            observation_spec.shape, action_spec.shape)
 
     def forward(self, obs: Tensor, act: Tensor, alt_obs: Tensor, alt_act: Tensor) -> Tensor:
         """

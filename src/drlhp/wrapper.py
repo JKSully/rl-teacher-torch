@@ -29,8 +29,8 @@ class HumanPreferenceWrapper(_EnvWrapper):
 
         super().__init__(**kwargs, allow_done_after_reset=True)
 
-        self.reward_predictor = reward_predictor if reward_predictor is not None else ComparisonRewardPredictor()
-        self.label_schedule = label_schedule if label_schedule is not None else ConstantLabelSchedule()
+        self.reward_predictor = reward_predictor or ComparisonRewardPredictor()
+        self.label_schedule = label_schedule or ConstantLabelSchedule()
         self.label_annealer = LabelAnnealer()
         self.train_reward_predictor = True
         self.collect_preferences = False

@@ -6,17 +6,22 @@ from torchrl.data import TensorSpec
 
 import torchrl
 from torchrl.envs import EnvBase
-from torchrl.envs.transforms import Transform, CatTensors
+from torchrl.envs.transforms import Transform, ObservationTransform
+from torchrl.record import VideoRecorder
 from torchrl.modules import MLP
 
-from tensordict import NestedKey, TensorDictBase
+from tensordict import TensorDictBase
+from tensordict.utils import NestedKey
 
 from collections.abc import Sequence
+from typing import Optional, TypeAlias
 from copy import copy
 from math import prod
+import sys
 
 from drlhp.reward_predictor import ComparisonRewardPredictor
 from drlhp.label_schedules import ConstantLabelSchedule, LabelSchedule, LabelAnnealer
+
 
 class HumanPreferenceTransform(Transform):
     def __init__(self,
@@ -32,12 +37,10 @@ class HumanPreferenceTransform(Transform):
             out_keys = ['logits']  # Or reward?
         super().__init__(in_keys=in_keys, out_keys=out_keys)
 
-        input_dim = prod(self.parent.observation_spec.shape) + \
-            prod(self.parent.action_spec.shape)
-
-        self.reward_predictor = reward_predictor if reward_predictor is not None else ComparisonRewardPredictor(
-            input_dim)
-        self.label_schedule = label_schedule if label_schedule is not None else ConstantLabelSchedule()
+        # TODO: is ComparisonRewardPredictor still needed?
+        self.reward_predictor = reward_predictor or ComparisonRewardPredictor(
+            self.parent.observation_spec, self.parent.action_spec)
+        self.label_schedule = label_schedule or ConstantLabelSchedule()
         self.label_annealer = LabelAnnealer()  # TODO: input args
 
     def forward(self, tensordict: TensorDictBase) -> TensorDictBase:
@@ -52,6 +55,12 @@ class HumanPreferenceTransform(Transform):
 
     # Can _apply_transform take in multiple tensors (ie obs and act)?
     def _apply_transform(self, obs: torch.Tensor):
+        pass
+
+    def _step(self, tensordict: TensorDictBase) -> TensorDictBase:
+        pass
+
+    def _call(self, tensordict: TensorDictBase) -> TensorDictBase:
         pass
 
     def to(self, *args, **kwargs):
