@@ -8,6 +8,7 @@ import torchrl
 from torchrl.envs import EnvBase
 from torchrl.envs.transforms import Transform, ObservationTransform
 from torchrl.record import VideoRecorder
+from torchrl.record.loggers import CSVLogger
 from torchrl.modules import MLP
 
 from tensordict import TensorDictBase
@@ -26,8 +27,8 @@ from drlhp.label_schedules import ConstantLabelSchedule, LabelSchedule, LabelAnn
 class HumanPreferenceTransform(Transform):
     def __init__(self,
                  reward_predictor: nn.Module = None,
-                 in_keys: Sequence[NestedKey] = None,
-                 out_keys: Sequence[NestedKey] = None,
+                 in_keys: Sequence[NestedKey] = None, # type: ignore
+                 out_keys: Sequence[NestedKey] = None, # type: ignore
                  label_schedule: LabelSchedule = None,):
 
         if in_keys is None:

@@ -7,3 +7,10 @@
 
 # Thoughts:
 What if I create a logger that inputs into `VideoRecorder` that uploads to the database for comparison collections? Then I need to somehow check if there are comparible sequences for use in network.
+
+# Bugfixes:
+Pylance does not like the `Sequence[NestedKey]` anymore after updating packages to `0.6.0`. Will investigate. Ignored for now
+
+
+# TODO:
+test video logging into GCS.

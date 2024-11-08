@@ -20,7 +20,7 @@ dependencies = [
     "torchvision>=0.20.0",
     "torchrl>=0.6.0",
     "numpy>=2.0.0",
-    "gymnasium",
+    "gymnasium<1.0.0",
     "matplotlib",
     "tensorboard",
     "tensordict",
@@ -30,6 +30,7 @@ dependencies = [
     "dj_database_url",
     "gunicorn",
     "whitenoise",
+    "google-cloud-storage",
 ]
 
 [tool.setuptools.packages.find]
