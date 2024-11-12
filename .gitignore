@@ -2,6 +2,7 @@
 rl-teacher/
 _depreciated/
 test.ipynb
+IDP_videos/
 
 *.sqlite3
 

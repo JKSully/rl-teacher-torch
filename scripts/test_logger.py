@@ -74,7 +74,7 @@ class hyperparameters:
     num_cells = 256  # number of cells in each layer i.e. output dim.
     lr = 3e-4
     max_grad_norm = 1.0
-    frames_per_batch = 1000
+    frames_per_batch = 100
     # For a complete training, bring the number of frames up to 1M
     total_frames = 10_000
     sub_batch_size = 64  # cardinality of the sub-samples gathered from the current data in the inner loop
@@ -94,10 +94,10 @@ def main():
 
     env = GymEnv('InvertedDoublePendulum-v4', from_pixels=True, pixels_only=False, device=DEVICE)
     env = TransformedEnv(env, Compose(
+        VideoRecorder(logger, tag='run_video'),
         ObservationNorm(loc=0.0, scale=1.0, in_keys=['observation']),
         DoubleToFloat(),
         StepCounter(),
-        VideoRecorder(logger, tag='run_video')
     )) 
 
     input_dim = env.observation_spec['observation'].shape[-1]
@@ -184,11 +184,14 @@ def main():
                     f"(init: {logs['eval reward (sum)'][0]: 4.4f}), "
                     f"eval step-count: {logs['eval step_count'][-1]}"
                 )
+                env.transform.dump()
                 del eval_rollout
 
         pbar.set_description(", ".join([eval_str, cum_reward_str, stepcount_str, lr_str]))
 
         scheduler.step()
+
+
 
     plt.figure(figsize=(10, 10))
     plt.subplot(2, 2, 1)
@@ -204,7 +207,6 @@ def main():
     plt.plot(logs["eval step_count"])
     plt.title("Max step count (test)")
     plt.show()
-
 
 if __name__ == '__main__':
     main()

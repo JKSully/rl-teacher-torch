@@ -31,6 +31,7 @@ dependencies = [
     "gunicorn",
     "whitenoise",
     "google-cloud-storage",
+    "av",
 ]
 
 [tool.setuptools.packages.find]
