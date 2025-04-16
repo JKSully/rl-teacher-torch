@@ -17,7 +17,7 @@ dependencies = [
     "torchvision",
     "torchrl",
     "numpy>=2.0.0",
-    "gymnasium",
+    "gymnasium<1.0.0",
     "matplotlib",
     "tensorboard",
     "tensordict",
