@@ -109,3 +109,4 @@ ENV/
 
 # django
 src/human_feedback_site/staticfiles/
+src/human_feedback_site/static/
