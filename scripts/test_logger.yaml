@@ -1,0 +1,12 @@
+hyperparameters:
+  num_cells: 256
+  lr: 3e-4
+  max_grad_norm: 1.0
+  frames_per_batch: 100
+  total_frames: 1e4
+  sub_batch_size: 64
+  num_epochs: 10
+  clip_epsilon: 0.2
+  gamma: 0.99
+  lmbda: 0.95
+  entropy_eps: 1e-4

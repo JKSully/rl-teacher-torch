@@ -1,11 +1,14 @@
 from collections import defaultdict
 from dataclasses import dataclass
 
+import hydra
 import matplotlib.pyplot as plt
 import torch
+from gymnasium.spaces import Dict
+from omegaconf import DictConfig
 from tensordict.nn import TensorDictModule
 from torch import nn
-from torchrl.collectors import SyncDataCollector
+from torchrl.collectors import Collector
 from torchrl.data import ReplayBuffer, TensorSpec
 from torchrl.data.replay_buffers import LazyTensorStorage, SamplerWithoutReplacement
 from torchrl.envs import GymEnv
@@ -72,25 +75,8 @@ class ValueNet(nn.Module):
         return super().to(*args, **kwargs)
 
 
-@dataclass
-class hyperparameters:
-    num_cells = 256  # number of cells in each layer i.e. output dim.
-    lr = 3e-4
-    max_grad_norm = 1.0
-    frames_per_batch = 100
-    # For a complete training, bring the number of frames up to 1M
-    total_frames = 10_000
-    sub_batch_size = 64  # cardinality of the sub-samples gathered from the current data in the inner loop
-    num_epochs = 10  # optimization steps per batch of data collected
-    clip_epsilon = (
-        0.2  # clip value for PPO loss: see the equation in the intro for more context.
-    )
-    gamma = 0.99
-    lmbda = 0.95
-    entropy_eps = 1e-4
-
-
-def main():
+@hydra.main(version_base="1.2", config_path="", config_name="test_logger")
+def main(cfg: DictConfig):
     # DEVICE = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
     DEVICE = "cpu"
 
@@ -114,7 +100,7 @@ def main():
     input_dim = env.observation_spec["observation"].shape[-1]
 
     actor_net = ActorNet(
-        num_cells=hyperparameters.num_cells,
+        num_cells=cfg.hyperparameters.num_cells,
         input_dim=input_dim,
         action_spec=env.action_spec,
     ).to(DEVICE)
@@ -133,59 +119,60 @@ def main():
         return_log_prob=True,
     )
 
-    value_net = ValueNet(num_cells=hyperparameters.num_cells, input_dim=input_dim).to(
-        DEVICE
-    )
+    value_net = ValueNet(
+        num_cells=cfg.hyperparameters.num_cells, input_dim=input_dim
+    ).to(DEVICE)
     value_module = ValueOperator(module=value_net, in_keys=["observation"])
 
-    collector = SyncDataCollector(
+    collector = Collector(
         env,
         policy_module,
-        frames_per_batch=hyperparameters.frames_per_batch,
-        total_frames=hyperparameters.total_frames,
+        frames_per_batch=cfg.hyperparameters.frames_per_batch,
+        total_frames=cfg.hyperparameters.total_frames,
         split_trajs=False,
         device=DEVICE,
     )
 
     replay_buffer = ReplayBuffer(
-        storage=LazyTensorStorage(max_size=hyperparameters.frames_per_batch),
+        storage=LazyTensorStorage(max_size=cfg.hyperparameters.frames_per_batch),
         sampler=SamplerWithoutReplacement(),
     )
 
     advantage_module = GAE(
-        gamma=hyperparameters.gamma,
-        lmbda=hyperparameters.lmbda,
+        gamma=cfg.hyperparameters.gamma,
+        lmbda=cfg.hyperparameters.lmbda,
         value_network=value_module,
         average_gae=True,
     ).to(DEVICE)
     loss_module = ClipPPOLoss(
         actor_network=policy_module,
         critic_network=value_module,
-        clip_epsilon=hyperparameters.clip_epsilon,
-        entropy_bonus=bool(hyperparameters.entropy_eps),
-        entropy_coeff=hyperparameters.entropy_eps,
+        clip_epsilon=cfg.hyperparameters.clip_epsilon,
+        entropy_bonus=bool(cfg.hyperparameters.entropy_eps),
+        entropy_coeff=cfg.hyperparameters.entropy_eps,
     )
 
-    optim = torch.optim.Adam(loss_module.parameters(), lr=hyperparameters.lr)
+    optim = torch.optim.Adam(loss_module.parameters(), lr=cfg.hyperparameters.lr)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optim,
-        T_max=hyperparameters.total_frames // hyperparameters.frames_per_batch,
+        T_max=cfg.hyperparameters.total_frames // cfg.hyperparameters.frames_per_batch,
         eta_min=0.0,
     )
 
     logs = defaultdict(list)
-    pbar = tqdm(total=hyperparameters.total_frames)
+    pbar = tqdm(total=cfg.hyperparameters.total_frames)
     eval_str = ""
 
     for i, tensordict_data in enumerate(collector):
-        for _ in range(hyperparameters.num_epochs):
+        for _ in range(cfg.hyperparameters.num_epochs):
             advantage_module(tensordict_data)
             data_view = tensordict_data.reshape(-1)
             replay_buffer.extend(data_view.cpu())
             for _ in range(
-                hyperparameters.frames_per_batch // hyperparameters.sub_batch_size
+                cfg.hyperparameters.frames_per_batch
+                // cfg.hyperparameters.sub_batch_size
             ):
-                subdata = replay_buffer.sample(hyperparameters.sub_batch_size)
+                subdata = replay_buffer.sample(cfg.hyperparameters.sub_batch_size)
                 loss_vals = loss_module(subdata.to(DEVICE))
                 loss_value = (
                     loss_vals["loss_objective"]
@@ -194,7 +181,7 @@ def main():
                 )
                 loss_value.backward()
                 torch.nn.utils.clip_grad_norm_(
-                    loss_module.parameters(), hyperparameters.max_grad_norm
+                    loss_module.parameters(), cfg.hyperparameters.max_grad_norm
                 )
                 optim.step()
                 optim.zero_grad()
